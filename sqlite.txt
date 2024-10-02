@@ -1,0 +1,51 @@
+-- Tabela de usuários
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL
+);
+
+-- Tabela de restaurantes
+CREATE TABLE restaurants (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  cep TEXT,
+  region TEXT,
+  liked INTEGER DEFAULT 0
+);
+
+-- Tabela de junção para a relação N:N entre usuários e restaurantes
+CREATE TABLE user_restaurants (
+  user_id INTEGER,
+  restaurant_id INTEGER,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id),
+  PRIMARY KEY (user_id, restaurant_id) -- Garante que não haverá duplicação
+);
+
+-- Tabela de comidas
+CREATE TABLE food (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL
+);
+
+-- Tabela de junção para a relação N:N entre comidas e restaurantes
+CREATE TABLE restaurant_food (
+  food_id INTEGER,
+  restaurant_id INTEGER,
+  FOREIGN KEY (food_id) REFERENCES food(id),
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id),
+  PRIMARY KEY (food_id, restaurant_id) -- Garante que não haverá duplicação
+);
+
+-- Tabela de avaliações
+CREATE TABLE ratings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  restaurant_id INTEGER,
+  rating INTEGER CHECK(rating >= 1 AND rating <= 5), -- Por exemplo, de 1 a 5
+  comment TEXT, -- Opcional
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+);

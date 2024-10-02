@@ -1,0 +1,5 @@
+USE CASE:
+- O usuario deve criar sua conta e logar
+- Deve aparecer uma tela em que se cadastra um novo restaurante
+- Deve escolher quais comidas se tem no restaurante
+- Deve apresentar para o cliente os restaurantes salvos
