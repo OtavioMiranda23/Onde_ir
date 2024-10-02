@@ -1,4 +1,6 @@
 import axios from "axios";
+import { Account, AccountDAODatabase } from "../src/signupRepository";
+import Signup from "../src/useCase/signup";
 
 axios.defaults.validateStatus = function () {
 	return true;
@@ -13,6 +15,10 @@ type OutputUser = {
     email: string,
     passwordHash: string
 }
+let accountDAO: AccountDAODatabase;
+let signup: Signup;
+beforeEach(() => {
+    signup = new Signup(accountDAO);})
 test("Deve criar nova conta", async () => {
     const inputUser = {
         name: "otavio",
@@ -30,15 +36,13 @@ test("Deve criar nova conta", async () => {
     expect(outputUser.passwordHash).toBe(inputUser.passwordHash);   
 })
 
-test("Não deve criar nova conta com nome invalido", async () => {
-    const inputUser = {
+test("Não deve criar nova conta com nome invalido", () => {
+    const inputUser: Account = {
         name: "",
         email: `otavio${Math.random()}@gmail.com`,
         passwordHash: "Abc12345678"
     }
-    const responseSignup = await axios.post("http://localhost:3000/signup", inputUser);
-    expect(responseSignup.status).toBe(400); 
-    expect(responseSignup.data).toEqual({ error: "Invalid name" });
+    expect(() => signup.execute(inputUser)).toThrow("Invalid name");
 })
 test("Não deve criar nova conta com email invalido", async () => {
     const inputUser = {
@@ -46,9 +50,7 @@ test("Não deve criar nova conta com email invalido", async () => {
         email: `otavio${Math.random()}gmail.com`,
         passwordHash: "12345678"
     }
-    const responseSignup = await axios.post("http://localhost:3000/signup", inputUser);
-    expect(responseSignup.status).toBe(400); 
-    expect(responseSignup.data).toEqual({ error: "Invalid email" });
+    expect(() => signup.execute(inputUser)).toThrow("Invalid email");
 })
 test("Não deve criar nova conta com password invalido", async () => {
     const inputUser = {
@@ -56,7 +58,5 @@ test("Não deve criar nova conta com password invalido", async () => {
         email: `otavio${Math.random()}@gmail.com`,
         passwordHash: "abc1234567"
     }
-    const responseSignup = await axios.post("http://localhost:3000/signup", inputUser);
-    expect(responseSignup.status).toBe(400); 
-    expect(responseSignup.data).toEqual({ error: "Invalid password" });
+    expect(() => signup.execute(inputUser)).toThrow("Invalid password");
 })
