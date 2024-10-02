@@ -3,7 +3,16 @@ import axios from "axios";
 axios.defaults.validateStatus = function () {
 	return true;
 }
+type OutputSignup = {
+    userId: string
+}
 
+type OutputUser = {
+    id: string,
+    name: string,
+    email: string,
+    passwordHash: string
+}
 test("Deve criar nova conta", async () => {
     const inputUser = {
         name: "otavio",
@@ -11,8 +20,14 @@ test("Deve criar nova conta", async () => {
         passwordHash: "Abc12345678$$"
     }
     const responseSignup = await axios.post("http://localhost:3000/signup", inputUser);
-    const outputSignup =  responseSignup.data;
+    const outputSignup =  responseSignup.data as OutputSignup;
+    const responseUser =  await axios.get(`http://localhost:3000/user/${outputSignup.userId}`);
+    const outputUser = responseUser.data as OutputUser;
     expect(outputSignup).toBeDefined();
+    expect(outputUser.id).toBe(outputSignup.userId);
+    expect(outputUser.name).toBe(inputUser.name);
+    expect(outputUser.email).toBe(inputUser.email);
+    expect(outputUser.passwordHash).toBe(inputUser.passwordHash);   
 })
 
 test("Não deve criar nova conta com nome invalido", async () => {

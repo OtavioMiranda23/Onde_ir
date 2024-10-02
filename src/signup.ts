@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
-import Database from 'better-sqlite3';
-import path from 'path'
+
+import { Account, AccountDAODatabase } from './signupRepository';
 
 const app = express();
 app.use(express.json());
@@ -11,15 +11,16 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 const PORT =  3000;
 
-const dbPath = path.resolve("./onde_ir.db");
-const db = new Database(dbPath, {
-    verbose: console.log,
-    
+const accountDAO = new AccountDAODatabase();
+
+app.get("/user/:id", (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const account = accountDAO.getAccountById(userId);
+    res.status(200).json(account)
 })
 
 app.post("/signup", (req: Request, res: Response) => {
-    //- O usuario deve criar sua conta e logar;
-    const { name, email, passwordHash }: Input = req.body;
+    const { name, email, passwordHash }: Account = req.body;
     if (!name || name.length > 40) { 
         res.status(400).json({ error: "Invalid name" });
         return 
@@ -31,17 +32,11 @@ app.post("/signup", (req: Request, res: Response) => {
     if (!passwordHash || !isValidPassword(passwordHash)) {
         res.status(400).json({ error: "Invalid password" });
         return 
-     }
-    const stml = db.prepare("insert into users (name, email, password_hash) values (?, ?, ?)");
-    const info = stml.run(name, email, passwordHash) 
-    res.status(201).json({ userId: info.lastInsertRowid });
+    }
+    const account = { name, email, passwordHash };
+    const userId = accountDAO.saveAccount(account);
+    res.status(201).json(userId);
 })
-
-type Input = {
-    name: string,
-    email: string,
-    passwordHash: string
-}
 
 function isValidEmail(email: string): boolean {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
